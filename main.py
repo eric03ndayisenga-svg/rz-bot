@@ -16,16 +16,7 @@ TOKEN = os.getenv("BOT_TOKEN")
 ADMIN = int(os.getenv("ADMIN_ID", "8880467928"))
 DATA="bot_data.json"; SCHED="schedule.json"
 
-OWNER_TABLE = (
-    "\n\n"
-    "┌────────────────────────┐\n"
-    "│  📩 CONTACT OWNER      │\n"
-    "├────────────────────────┤\n"
-    "│  Telegram: @Onlinebu12 │\n"
-    "│  WhatsApp: 0727172400  │\n"
-    "└────────────────────────┘\n"
-    "🇷🇼 Rwanda online business zizewe - RZ"
-)
+OWNER_TABLE = "\n\n┌────────────────────────┐\n│  📩 CONTACT OWNER      │\n├────────────────────────┤\n│  Telegram: @Onlinebu12 │\n│  WhatsApp: 0727172400  │\n└────────────────────────┘\n🇷🇼 Rwanda online business zizewe - RZ"
 
 def contact_kb():
     return InlineKeyboardMarkup([
@@ -80,7 +71,7 @@ async def start(update,context):
     if chat.type in [ChatType.GROUP,ChatType.SUPERGROUP]:
         if gid not in groups:
             groups[gid]={"title":chat.title,"added_at":datetime.now().isoformat()}; save_data()
-        await update.message.reply_text(f"🇷🇼 RZ BOT V7\n{chat.title}\nEMEWE ✅ - Ndi muri group, nzatangira kohereza" + OWNER_TABLE)
+        await update.message.reply_text(f"🇷🇼 RZ BOT V7\n{chat.title}\nEMEWE ✅" + OWNER_TABLE)
         return
     if not await is_admin(update):
         await update.message.reply_text("Muraho! 👋\n🇷🇼 Rwanda online business zizewe - RZ\n@Hyunda100bot" + OWNER_TABLE, reply_markup=contact_kb()); return
@@ -89,9 +80,9 @@ async def start(update,context):
 async def addkey(update,context):
     if not await is_admin(update): return
     txt=" ".join(context.args)
-    if "|" not in txt: await update.message.reply_text("Koresha: /addkey hello | Muraho neza, uri muri RZ"); return
+    if "|" not in txt: await update.message.reply_text("Koresha: /addkey hello | Muraho neza"); return
     k,v=txt.split("|",1); keywords[k.strip().lower()]=v.strip(); save_data()
-    await update.message.reply_text(f"✅ Keyword '{k.strip()}' yongewe - RZ")
+    await update.message.reply_text(f"✅ Keyword '{k.strip()}' yongewe")
 
 async def delkey(update,context):
     if not await is_admin(update): return
@@ -106,7 +97,7 @@ async def schedule(update,context):
         await update.message.reply_text("Koresha:\n/schedule 30 | Message yawe hano"); return
     mins,msg=txt.split("|",1); mins=int(mins.strip())
     jobs.append({"id":len(jobs)+1,"interval_minutes":mins,"text":msg.strip(),"next_run":(datetime.now()+timedelta(minutes=mins)).isoformat()}); save_sched()
-    await update.message.reply_text(f"✅ Schedule yashyizweho!\n\nBuri {mins} min izohereza:\n\"{msg.strip()}\"" + OWNER_TABLE)
+    await update.message.reply_text(f"✅ Schedule yashyizweho! Buri {mins} min" + OWNER_TABLE)
 
 async def groups_cmd(update,context):
     if not await is_admin(update): return
@@ -133,7 +124,7 @@ async def handle_msg(update,context):
         if gid in groups:
             if settings.get("anti_link") and ("http" in text.lower() or "t.me/" in text.lower()):
                 if update.effective_user.id!=ADMIN:
-                    try: await update.message.delete(); await update.message.reply_text("🚫 Link ntizemewe hano muri RZ. Vugana na Admin." + OWNER_TABLE); return
+                    try: await update.message.delete(); await update.message.reply_text("🚫 Link ntizemewe hano muri RZ." + OWNER_TABLE); return
                     except: pass
             low=text.lower()
             for k,v in keywords.items():
@@ -145,10 +136,10 @@ async def new_mem(update,context):
         if m.id==context.bot.id:
             if gid not in groups:
                 groups[gid]={"title":chat.title,"added_at":datetime.now().isoformat()}; save_data()
-            await update.message.reply_text("✅ RZ V7 Yinjiye! 🇷🇼\nRwanda online business zizewe\nNzatangira kohereza messages hano, nta Admin bikenewe." + OWNER_TABLE, reply_markup=contact_kb())
+            await update.message.reply_text("✅ RZ V7 Yinjiye! 🇷🇼\nRwanda online business zizewe" + OWNER_TABLE, reply_markup=contact_kb())
         else:
             if gid in groups and settings.get("welcome"):
-                await update.message.reply_text(f"👋 Muraho {m.first_name}! Murakaza neza muri {chat.title} 🎉\n🇷🇼 Rwanda online business zizewe - RZ\nSoma rules, tubane neza!" + OWNER_TABLE, reply_markup=contact_kb())
+                await update.message.reply_text(f"👋 Muraho {m.first_name}! Murakaza neza muri {chat.title} 🎉\n🇷🇼 Rwanda online business zizewe - RZ" + OWNER_TABLE, reply_markup=contact_kb())
 
 async def btn(update,context):
     q=update.callback_query; await q.answer(); d=q.data
@@ -168,7 +159,7 @@ async def btn(update,context):
         gid=d.split("rj_")[1]
         if gid in pending: pending.pop(gid); save_data(); await q.edit_message_text("❌ Rejected")
     elif d=="broadcast_all": await q.edit_message_text("✍️ Ohereza msg ya RZ / /cancel" + OWNER_TABLE); context.user_data["broad"]=True
-    elif d=="stats": await q.edit_message_text(f"📊 RZ STATS\n🇷🇼 Rwanda online business zizewe\nG:{len(groups)}\nP:{len(pending)}\nJ:{len(jobs)}\nK:{len(keywords)}" + OWNER_TABLE,reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Back",callback_data="back")]]))
+    elif d=="stats": await q.edit_message_text(f"📊 RZ STATS\nG:{len(groups)}\nP:{len(pending)}\nJ:{len(jobs)}\nK:{len(keywords)}" + OWNER_TABLE,reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Back",callback_data="back")]]))
     elif d=="sched_list":
         t="\n".join([f"{j['id']} {j['interval_minutes']}m: {j['text'][:25]}" for j in jobs]) or "Nta job"
         await q.edit_message_text(t,reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🗑️ Clear",callback_data="clear_jobs")],[InlineKeyboardButton("⬅️ Back",callback_data="back")]]))
@@ -179,13 +170,13 @@ async def btn(update,context):
     elif d=="tw": settings["welcome"]=not settings.get("welcome",True); save_data(); await q.edit_message_text(f"Welcome:{settings.get('welcome')}")
     elif d=="tl": settings["anti_link"]=not settings.get("anti_link",False); save_data(); await q.edit_message_text(f"AntiLink:{settings.get('anti_link')}")
     elif d=="keys":
-        t="\n".join([f"{k} -> {v[:30]}" for k,v in keywords.items()]) or "Nta keyword\nKoresha /addkey hello | Muraho"
+        t="\n".join([f"{k} -> {v[:30]}" for k,v in keywords.items()]) or "Nta keyword"
         await q.edit_message_text(t,reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Back",callback_data="back")]]))
     elif d=="back": await q.edit_message_text(f"👑 RZ PANEL 👑\n\nRwanda online business zizewe 🇷🇼\nG:{len(groups)} | P:{len(pending)} | J:{len(jobs)}\nLIVE 🟢" + OWNER_TABLE,reply_markup=panel_kb())
 
 async def post_init(app): asyncio.create_task(loop_job(app))
 
-def main():
+async def main_async():
     if not TOKEN:
         print("❌ BOT_TOKEN missing!")
         return
@@ -201,7 +192,13 @@ def main():
     app.add_handler(CallbackQueryHandler(btn))
     app.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND,handle_msg))
     print("RZ BOT V7 STARTED")
-    app.run_polling(drop_pending_updates=True, allowed_updates=Update.ALL_TYPES)
+    await app.initialize()
+    await app.start()
+    await app.updater.start_polling(drop_pending_updates=True, allowed_updates=Update.ALL_TYPES)
+    await asyncio.Event().wait()
+
+def main():
+    asyncio.run(main_async())
 
 if __name__=="__main__":
     main()
