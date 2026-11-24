@@ -6,19 +6,16 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, ContextTypes, filters
 from telegram.constants import ChatType
 
-# RZ - Rwanda online business zizewe - @Hyunda100bot
 flask_app = Flask(__name__)
 @flask_app.route('/')
 def home(): return "RZ V7 LIVE - Rwanda online business zizewe"
 def run_web():
     flask_app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 10000)))
-Thread(target=run_web, daemon=True).start()
 
 TOKEN = os.getenv("BOT_TOKEN")
-ADMIN = int(os.getenv("ADMIN_ID", "0"))
+ADMIN = int(os.getenv("ADMIN_ID", "8880467928"))
 DATA="bot_data.json"; SCHED="schedule.json"
 
-# ===== TABLE YA OWNER - IZA HASI HOSE =====
 OWNER_TABLE = (
     "\n\n"
     "┌────────────────────────┐\n"
@@ -54,7 +51,6 @@ groups,pending,keywords,settings=load_data(); jobs=load_sched()
 
 async def is_admin(u): return u.effective_user.id==ADMIN
 
-# ===== SCHEDULE - MESSAGE + TABLE HASI =====
 async def loop_job(app):
     while True:
         try:
@@ -107,7 +103,7 @@ async def schedule(update,context):
     if not await is_admin(update): return
     txt=" ".join(context.args)
     if "|" not in txt:
-        await update.message.reply_text("Koresha:\n/schedule 30 | Message yawe hano\n\nUrugero:\n/schedule 30 | Twabazaniye offers nshya!"); return
+        await update.message.reply_text("Koresha:\n/schedule 30 | Message yawe hano"); return
     mins,msg=txt.split("|",1); mins=int(mins.strip())
     jobs.append({"id":len(jobs)+1,"interval_minutes":mins,"text":msg.strip(),"next_run":(datetime.now()+timedelta(minutes=mins)).isoformat()}); save_sched()
     await update.message.reply_text(f"✅ Schedule yashyizweho!\n\nBuri {mins} min izohereza:\n\"{msg.strip()}\"" + OWNER_TABLE)
@@ -152,12 +148,7 @@ async def new_mem(update,context):
             await update.message.reply_text("✅ RZ V7 Yinjiye! 🇷🇼\nRwanda online business zizewe\nNzatangira kohereza messages hano, nta Admin bikenewe." + OWNER_TABLE, reply_markup=contact_kb())
         else:
             if gid in groups and settings.get("welcome"):
-                await update.message.reply_text(
-                    f"👋 Muraho {m.first_name}! Murakaza neza muri {chat.title} 🎉\n"
-                    f"🇷🇼 Rwanda online business zizewe - RZ\n"
-                    f"Soma rules, tubane neza!" + OWNER_TABLE,
-                    reply_markup=contact_kb()
-                )
+                await update.message.reply_text(f"👋 Muraho {m.first_name}! Murakaza neza muri {chat.title} 🎉\n🇷🇼 Rwanda online business zizewe - RZ\nSoma rules, tubane neza!" + OWNER_TABLE, reply_markup=contact_kb())
 
 async def btn(update,context):
     q=update.callback_query; await q.answer(); d=q.data
@@ -193,8 +184,13 @@ async def btn(update,context):
     elif d=="back": await q.edit_message_text(f"👑 RZ PANEL 👑\n\nRwanda online business zizewe 🇷🇼\nG:{len(groups)} | P:{len(pending)} | J:{len(jobs)}\nLIVE 🟢" + OWNER_TABLE,reply_markup=panel_kb())
 
 async def post_init(app): asyncio.create_task(loop_job(app))
+
 def main():
-    app=Application.builder().token(TOKEN).post_init(post_init).build()
+    if not TOKEN:
+        print("❌ BOT_TOKEN missing!")
+        return
+    Thread(target=run_web, daemon=True).start()
+    app = Application.builder().token(TOKEN).post_init(post_init).build()
     app.add_handler(CommandHandler("start",start))
     app.add_handler(CommandHandler("broadcast",start))
     app.add_handler(CommandHandler("groups",groups_cmd))
@@ -204,5 +200,8 @@ def main():
     app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS,new_mem))
     app.add_handler(CallbackQueryHandler(btn))
     app.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND,handle_msg))
-    print("RZ BOT V7 STARTED"); app.run_polling()
-if __name__=="__main__": main()
+    print("RZ BOT V7 STARTED")
+    app.run_polling(drop_pending_updates=True, allowed_updates=Update.ALL_TYPES)
+
+if __name__=="__main__":
+    main()
